@@ -14,17 +14,17 @@ def parser_arguments():
 def search_duplicates(directory_path):
     duplicates = {}
     file_paths = []
-    directory_paths = []
-    for root, directories, files in os.walk(directory_path):
-        directory_paths.append(root)
+    dir_paths = []
+    for root, dirs, files in os.walk(directory_path):
+        dir_paths.append(root)
         for file in files:
             if file in duplicates:
                 continue
             file_path = os.path.join(root, file)
             file_size = os.path.getsize(file_path)
             file_paths.append(file_path)
-            for again_root, again_directories, again_files in os.walk(directory_path):
-                    if again_root in directory_paths:
+            for again_root, again_dirs, again_files in os.walk(directory_path):
+                    if again_root in dir_paths:
                         continue
                     for again_file in again_files:
                         if again_file in duplicates:
