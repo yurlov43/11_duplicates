@@ -1,6 +1,7 @@
 import argparse
 import os
 import timeit
+from collections import defaultdict
 
 
 def parser_arguments():
@@ -12,18 +13,13 @@ def parser_arguments():
 
 
 def get_all_files(directory_path):
-    all_files = {}
-    for root, dirs, files in os.walk(directory_path):
-        for file in files:
-            file_path = os.path.join(root, file)
+    all_files = defaultdict(list)
+    for root, dirs, file_names in os.walk(directory_path):
+        for file_name in file_names:
+            file_path = os.path.join(root, file_name)
             file_size = os.path.getsize(file_path)
-            combining_name_size = ('{}..{}'.format(file, file_size))
-            file_paths = all_files.get(combining_name_size)
-            if not file_paths:
-                file_paths = []
-            file_paths.append(file_path)
-            all_files.update({combining_name_size: file_paths.copy()})
-            file_paths.clear()
+            combining_name_size = (file_name, file_size)
+            all_files[combining_name_size].append(file_path)
     return all_files
 
 
@@ -31,15 +27,15 @@ def search_duplicates(all_files):
     duplicates = {}
     for combining_name_size, file_paths in all_files.items():
         if (len(file_paths) > 1):
-            duplicates.update({combining_name_size: file_paths.copy()})
+            duplicates.update({combining_name_size: file_paths})
     return duplicates
 
 
 def print_the_result(duplicates, search_time):
     print('\nДубликаты:')
     for combining_name_size, file_paths in duplicates.items():
-        file_name = combining_name_size.split('..')[0]
-        file_size = combining_name_size.split('..')[1]
+        file_name = combining_name_size[0]
+        file_size = combining_name_size[1]
         print('\nФайл: {}'.format(file_name))
         print('Размер: {}'.format(file_size))
         for number, file_path in enumerate(file_paths, start=1):
