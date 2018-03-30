@@ -11,40 +11,37 @@ def parser_arguments():
     return parser.parse_args()
 
 
-def search_duplicates(directory_path):
-    duplicates = {}
-    file_paths = []
-    dir_paths = []
+def get_all_files(directory_path):
+    all_files = {}
     for root, dirs, files in os.walk(directory_path):
-        dir_paths.append(root)
         for file in files:
-            if file in duplicates:
-                continue
             file_path = os.path.join(root, file)
             file_size = os.path.getsize(file_path)
+            name = ('{}_{}'.format(file, file_size))
+            file_paths = all_files.get(name)
+            if not file_paths:
+                file_paths = []
             file_paths.append(file_path)
-            for again_root, again_dirs, again_files in os.walk(directory_path):
-                    if again_root in dir_paths:
-                        continue
-                    for again_file in again_files:
-                        if again_file in duplicates:
-                            continue
-                        again_file_path = os.path.join(again_root, again_file)
-                        again_file_size = os.path.getsize(again_file_path)
-                        if (again_file == file and
-                                again_file_size == file_size and
-                                again_file_path != file_path):
-                                    file_paths.append(again_file_path)
-            if (len(file_paths) > 1):
-                duplicates.update({file: file_paths.copy()})
+            all_files.update({name: file_paths.copy()})
             file_paths.clear()
+    return all_files
+
+
+def search_duplicates(all_files):
+    duplicates = {}
+    for name, file_paths in all_files.items():
+        if (len(file_paths) > 1):
+            duplicates.update({name: file_paths.copy()})
     return duplicates
 
 
 def print_the_result(duplicates, search_time):
     print('\nДубликаты:')
-    for file_name, file_paths in duplicates.items():
-        print('{} {}'.format('\n', file_name))
+    for duplicate_name, file_paths in duplicates.items():
+        file_name = duplicate_name.split('_')[0]
+        file_size = duplicate_name.split('_')[1]
+        print('\nФайл: {}'.format(file_name))
+        print('Размер: {}'.format(file_size))
         for number, file_path in enumerate(file_paths, start=1):
             print('{}{}. {}'.format('\t', number, file_path))
     print('\nНайдено {} файла(ов).'.format(len(duplicates)))
@@ -54,6 +51,7 @@ def print_the_result(duplicates, search_time):
 if __name__ == '__main__':
     arguments = parser_arguments()
     start_time = timeit.default_timer()
-    duplicates = search_duplicates(arguments.directory_path)
+    all_files = get_all_files(arguments.directory_path)
+    duplicates = search_duplicates(all_files)
     search_time = timeit.default_timer()-start_time
     print_the_result(duplicates, search_time)
