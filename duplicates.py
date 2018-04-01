@@ -18,24 +18,21 @@ def get_all_files(directory_path):
         for file_name in file_names:
             file_path = os.path.join(root, file_name)
             file_size = os.path.getsize(file_path)
-            combining_name_size = (file_name, file_size)
-            all_files[combining_name_size].append(file_path)
+            all_files[(file_name, file_size)].append(file_path)
     return all_files
 
 
 def search_duplicates(all_files):
     duplicates = {}
-    for combining_name_size, file_paths in all_files.items():
+    for (file_name, file_size), file_paths in all_files.items():
         if (len(file_paths) > 1):
-            duplicates.update({combining_name_size: file_paths})
+            duplicates.update({(file_name, file_size): file_paths})
     return duplicates
 
 
 def print_the_result(duplicates, search_time):
     print('\nДубликаты:')
-    for combining_name_size, file_paths in duplicates.items():
-        file_name = combining_name_size[0]
-        file_size = combining_name_size[1]
+    for (file_name, file_size), file_paths in duplicates.items():
         print('\nФайл: {}'.format(file_name))
         print('Размер: {}'.format(file_size))
         for number, file_path in enumerate(file_paths, start=1):
